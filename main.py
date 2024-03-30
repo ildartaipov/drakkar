@@ -102,6 +102,17 @@ def getFramesGenerator():
                    b'Content-Type: image/jpeg\r\n\r\n' + buffer.tobytes() + b'\r\n')
 
 
+def shut_down(really):
+    if really!="true":
+        return
+    print("shutting down")
+    command = "/usr/bin/sudo /sbin/shutdown -h now"
+    import subprocess
+    process = subprocess.Popen(command.split(), stdout=subprocess.PIPE)
+    output = process.communicate()[0]
+    print(output)
+
+
 @app.route('/video_feed')
 def video_feed():
     """ Генерируем и отправляем изображения с камеры"""
@@ -126,6 +137,14 @@ def data():
     global radsens_answer, chassis_answer
     _data = radsens_answer
     return _data, 200, {'Content-Type': 'application/json'}
+
+
+@app.route('/device')
+def device():
+    """ Пришел запрос на выключение малинки """
+    shut_down(request.args.get('poweroff'))
+    return '', 200, {'Content-Type': 'text/plain'}
+
 
 if __name__ == '__main__':
 
