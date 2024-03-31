@@ -38,30 +38,49 @@ radsens_answer = {}
 
 maxAbsSpeed = 255
 speedScale = 1
+def resizing(img, new_width=None, new_height=None, interp=cv2.INTER_LINEAR):
+    h, w = img.shape[:2]
+
+    if new_width is None and new_height is None:
+        return img
+
+    if new_width is None:
+        ratio = new_height / h
+        dimension = (int(w * ratio), new_height)
+
+    else:
+        ratio = new_width / w
+        dimension = (new_width, int(h * ratio))
+
+    return cv2.resize(img, dimension, interpolation=interp), ratio
+
+
 def getFramesGenerator():
     """ Генератор фреймов для вывода в веб-страницу, тут же можно поиграть с openCV"""
     while True:
         # time.sleep(0.01)  # ограничение fps (если видео тупит, можно убрать)
-        success, frame = camera.read()  # Получаем фрейм с камеры
+        success, orig_frame = camera.read()  # Получаем фрейм с камеры
 
         if success:
-            frame = cv2.flip(frame, 1)
-            frame = cv2.resize(frame, (320, 240),
-                               interpolation=cv2.INTER_AREA)  # уменьшаем разрешение кадров (если видео тупит, можно уменьшить еще больше)
-            height, width = frame.shape[0:2]  # получаем разрешение кадра
+
+            opencv_frame, ratio = resizing(orig_frame, 320, 240)
+
+            height, width = opencv_frame.shape[0:2]  # получаем разрешение кадра
+
             # faces = face_cascade.detectMultiScale(frame, scaleFactor=1.1, minNeighbors=10)
 
-            hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)  # переводим кадр из RGB в HSV
+            hsv = cv2.cvtColor(opencv_frame, cv2.COLOR_BGR2HSV)  # переводим кадр из RGB в HSV
 
             # binary = cv2.inRange(hsv, (18, 60, 100), (32, 255, 255))  # пороговая обработка кадра (выделяем все желтое)
-            #binary = cv2.inRange(hsv, (0, 0, 0), (255, 255, 35))  # пороговая обработка кадра (выделяем все черное)
+            # binary = cv2.inRange(hsv, (0, 0, 0), (255, 255, 35))  # пороговая обработка кадра (выделяем все черное)
 
-            bin1 = cv2.inRange(hsv, (0, 60, 70), (10, 255, 255)) # красный цвет с одного конца
-            bin2 = cv2.inRange(hsv, (160, 60, 70), (179, 255, 255)) # красный цвет с другого конца
-            binary = bin1 + bin2  # складываем битовые маски
+            bin1 = cv2.inRange(hsv, (0, 60, 70), (5, 255, 255))  # красный цвет с одного конца
+            bin2 = cv2.inRange(hsv, (170, 60, 70), (179, 255, 255))  # красный цвет с другого конца
 
+            binary = bin1 + bin2
 
-            contours, _ = cv2.findContours(binary, cv2.RETR_EXTERNAL,                               cv2.CHAIN_APPROX_NONE)  # получаем контуры выделенных областей
+            contours, _ = cv2.findContours(binary, cv2.RETR_EXTERNAL,
+                                           cv2.CHAIN_APPROX_NONE)  # получаем контуры выделенных областей
 
             if len(contours) != 0:  # если найден хоть один контур
                 maxc = max(contours, key=cv2.contourArea)  # находим наибольший контур
@@ -82,22 +101,33 @@ def getFramesGenerator():
                     controlX = 2 * (cx - width / 2) / width  # находим отклонение найденного объекта от центра кадра и
                     # нормализуем его (приводим к диапазону [-1; 1])
 
-                    cv2.drawContours(frame, maxc, -1, (0, 255, 0), 1)  # рисуем контур
-                    cv2.line(frame, (cx, 0), (cx, height), (0, 255, 0), 1)  # рисуем линию линию по x
-                    cv2.line(frame, (0, cy), (width, cy), (0, 255, 0), 1)  # линия по y
+                    # увеличиваем размер контура для исходного кадра
+
+                    maxc[:, :, 0] = maxc[:, :, 0] / ratio
+                    maxc[:, :, 1] = maxc[:, :, 1] / ratio
+
+                    cv2.drawContours(orig_frame, maxc, -1, (0, 255, 0), 8)  # рисуем контур
+                    cv2.line(orig_frame, (int(cx / ratio), 0), (int(cx / ratio), int(height / ratio)),
+                             (0, 255, 0), 3)  # рисуем линию линию по x
+                    cv2.line(orig_frame, (0, int(cy / ratio)), (int(width / ratio), int(cy / ratio)), (0, 255, 0),
+                             3)  # линия по y
+
+                    # Using cv2.putText() method
+                    orig_frame = cv2.putText(orig_frame, 'h, s, v: ' + str(h) + ',' + str(s) + ',' + str(v), (50, 100),
+                                             font, fontScale, color, thickness, cv2.LINE_AA)
 
             # frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)   # перевод изображения в градации серого
-           # _, frame = cv2.threshold(frame, 127, 255, cv2.THRESH_BINARY)  # бинаризуем изображение
-           #   print(len(faces))
-           #
-           #  if len(faces) > 1:
-           #      msg_led["red"], msg_led["green"], msg_led["blue"] = 0, 0, 25
-           #  elif len(faces) > 0:
-           #      msg_led["red"], msg_led["green"], msg_led["blue"] = 25, 0, 0
-           #  else:
-           #      msg_led["red"], msg_led["green"], msg_led["blue"] = 0, 25, 0
+            # _, frame = cv2.threshold(frame, 127, 255, cv2.THRESH_BINARY)  # бинаризуем изображение
+            #   print(len(faces))
+            #
+            #  if len(faces) > 1:
+            #      msg_led["red"], msg_led["green"], msg_led["blue"] = 0, 0, 25
+            #  elif len(faces) > 0:
+            #      msg_led["red"], msg_led["green"], msg_led["blue"] = 25, 0, 0
+            #  else:
+            #      msg_led["red"], msg_led["green"], msg_led["blue"] = 0, 25, 0
 
-            _, buffer = cv2.imencode('.jpg', frame)
+            _, buffer = cv2.imencode('.jpg', orig_frame)
             yield (b'--frame\r\n'
                    b'Content-Type: image/jpeg\r\n\r\n' + buffer.tobytes() + b'\r\n')
 
