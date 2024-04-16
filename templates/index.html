@@ -219,7 +219,7 @@
 				.then(response => response.json())
 				.then(data => {
 					const value = data.status.radsens.intensyDynamic; // заменить someValue на нужное значение
-					document.getElementById('output').innerText = `Фон: ${value}`;
+					document.getElementById('output').innerText = `☢️: ${value}`;
 				})
 				.catch(error => console.error(error));
 		}, 1000);
