@@ -62,6 +62,19 @@ radsens_answer = {}
 
 maxAbsSpeed = 255
 speedScale = 1
+
+# font
+font = cv2.FONT_HERSHEY_SIMPLEX
+# org
+org = (50, 50)
+# fontScale
+fontScale = 1
+# Blue color in BGR
+color = (255, 0, 0)
+# Line thickness of 2 px
+thickness = 2
+
+
 def resizing(img, new_width=None, new_height=None, interp=cv2.INTER_LINEAR):
     h, w = img.shape[:2]
 
