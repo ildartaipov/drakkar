@@ -26,7 +26,11 @@
 		#videoContainer {
 			background-color: #00000000;
 		}
-
+		#audioContainer	{
+		   position:absolute;
+		   top:50%;
+		   left:3%;
+		}
 		#video {
 			object-fit: cover;
 			width: 100vw;
@@ -121,8 +125,11 @@
 		</svg>
 	</button>
 	<a href="https://vk.com/rtekhnopark"><img id="logo" src="/static/logo.jpg"></a>
-	<!--	<a href="https://www.youtube.com/channel/UCHRTaqr8KSCfyo2_CLH-yfg"><img id="logo" src="/static/logo.png"></a>-->
 	<div id="joyDiv"></div>
+	<audio controls="controls" id="audioContainer">
+		<source src="{{ url_for('audio') }}" type="audio/mp3">
+		Your browser does not support the audio element.
+	</audio>
 	<script type="text/javascript">
 		function confirmShutdown() {
 			if (confirm("Вы уверены, что хотите выключить устройство?")) {

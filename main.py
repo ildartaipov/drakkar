@@ -1,10 +1,36 @@
+from subprocess import Popen, PIPE
 from flask import Flask, render_template, Response, request
 import cv2
+
 import serial
 import threading
 import time
 import json
 import argparse
+import pyaudio
+import sys
+
+CHUNK = 4096
+FORMAT = pyaudio.paFloat32
+CHANNELS = 1 if sys.platform == 'darwin' else 2
+RATE = 44100
+RECORD_SECONDS = 5
+
+audio1 = pyaudio.PyAudio()
+
+
+def list_microphones(pyaudio_instance):
+    info = pyaudio_instance.get_host_api_info_by_index(0)
+    numdevices = info.get('deviceCount')
+
+    result = []
+    for i in range(0, numdevices):
+        if (pyaudio_instance.get_device_info_by_host_api_device_index(0, i).get('maxInputChannels')) > 0:
+            name = pyaudio_instance.get_device_info_by_host_api_device_index(
+                0, i).get('name')
+            result += [[i, name]]
+    return result
+
 
 def is_json(myjson):
   try:
@@ -148,10 +174,57 @@ def video_feed():
     """ Генерируем и отправляем изображения с камеры"""
     return Response(getFramesGenerator(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
+
+p = pyaudio.PyAudio()
+
+
+
+def read_audio(inp, audio):
+    while True:
+        inp.write(audio.read(num_frames=CHUNK))
+
+def generateAudio():
+    global CHUNK, FORMAT, CHANNELS, RATE
+
+    sampleRate = RATE
+    bitsPerSample = 16
+    channels = CHANNELS
+
+    a = pyaudio.PyAudio().open(
+        format=FORMAT,
+        channels=CHANNELS,
+        rate=RATE,
+        input=True,
+        # input_device_index=1,
+        frames_per_buffer=CHUNK
+    )
+
+    c = f'ffmpeg -f f32le -acodec pcm_f32le -ar {RATE} -ac {CHANNELS} -i pipe: -f mp3 pipe:'
+    p = Popen(c.split(), stdin=PIPE, stdout=PIPE)
+    threading.Thread(target=read_audio, args=(p.stdin, a), daemon=True).start()
+
+    while True:
+        yield p.stdout.readline()
+
+
+@app.route("/audio")
+def audio():
+    return Response(
+        generateAudio(),
+        headers={
+            # NOTE: Ensure stream is not cached.
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0',
+        },
+        mimetype='audio/mpeg')
+
+
 @app.route('/')
 def index():
     """ Крутим html страницу """
     return render_template('index.html')
+
 
 @app.route('/control')
 def control():
@@ -213,6 +286,8 @@ if __name__ == '__main__':
             if is_json(_answer):
                 radsens_answer = _answer
             time.sleep(1 / sendFreq)
+
+print(list_microphones(audio1))
 
 threading.Thread(target=sender, daemon=True).start()  # запускаем тред отправки пакетов по uart с демоном
 
