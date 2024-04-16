@@ -1,207 +1,229 @@
 <!doctype html>
 <html lang="en">
+
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 	<meta name="apple-mobile-web-app-capable" content="yes">
-    <title>CVbot</title>
+	<title>CVbot</title>
 	<script src="/static/joy.js"></script>
 	<style>
-	html{
-		width: 100%;
-		height: 100%;
-	}
+		html {
+			width: 100%;
+			height: 100%;
+		}
 
-	body {
-		position:absolute; top:0; bottom:0; right:0; left:0;
-		margin: 0;
-		background-color: #000000;
-	}
+		body {
+			position: absolute;
+			top: 0;
+			bottom: 0;
+			right: 0;
+			left: 0;
+			margin: 0;
+			background-color: #000000;
+		}
 
-	#videoContainer {
-		background-color: #00000000;
-	}
+		#videoContainer {
+			background-color: #00000000;
+		}
+		#audioContainer	{
+		   position:absolute;
+		   top:50%;
+		   left:3%;
+		}
+		#video {
+			object-fit: cover;
+			width: 100vw;
+			height: 100vh;
+			display: block;
+			margin: auto;
+		}
 
-	#video {
-		object-fit: cover;
-		width: 100vw;
-		height: 100vh;
-		display: block;
-		margin: auto;
-	}
+		#logo {
+			width: 7%;
+			height: auto;
+			position: absolute;
+			padding: 0px;
+			top: 3%;
+			left: 1%;
+			opacity: 0.3;
+		}
 
-	#logo {
-		width: 7%;
-		height: auto;
-		position: absolute;
-		padding: 0px;
-		top: 3%;
-		left: 1%;
-		opacity: 0.3;
-	}
-	#logo:hover { opacity: 1}
-	#joyDiv {
-		width: max(33vw, 33vh);
-		height: max(33vw, 33vh);
-		max-width: 400px;
-		max-height: 400px;
-		position: absolute;
-		bottom: 0%;
-		right: 0%;
-	}
-	#output {
-		width: max(33vw, 33vh);
-		height: max(33vw, 33vh);
-		max-width: 400px;
-		max-height: 400px;
-		position: absolute;
-		top: 13%;
-		left: 3%;
-		font-size: 20px;
-		color: tomato;
-	}
-	#axes {
-		width: max(33vw, 33vh);
-		height: max(33vw, 33vh);
-		max-width: 400px;
-		max-height: 400px;
-		position: absolute;
-		top: 20%;
-		left: 3%;
-		font-size: 20px;
-		color: tomato;
-	}
-	#powerButton {
-      background-color: #f44336;
-      color: white;
-      padding: 10px 20px;
-      text-align: center;
-      text-decoration: none;
-      display: inline-block;
-      font-size: 16px;
-      margin: 4px 2px;
-      cursor: pointer;
-      border-radius: 5px;
-      border: none;
-      position: absolute;
-      top: 50px;
-      right: 20px;
-  }
-  #powerButton:hover {
-        background-color:#d32f2f;
-}
+		#logo:hover {
+			opacity: 1
+		}
+
+		#joyDiv {
+			width: max(33vw, 33vh);
+			height: max(33vw, 33vh);
+			max-width: 400px;
+			max-height: 400px;
+			position: absolute;
+			bottom: 0%;
+			right: 0%;
+		}
+
+		#output {
+			width: max(33vw, 33vh);
+			height: max(33vw, 33vh);
+			max-width: 400px;
+			max-height: 400px;
+			position: absolute;
+			top: 13%;
+			left: 3%;
+			font-size: 20px;
+			color: tomato;
+		}
+
+		#axes {
+			width: max(33vw, 33vh);
+			height: max(33vw, 33vh);
+			max-width: 400px;
+			max-height: 400px;
+			position: absolute;
+			top: 20%;
+			left: 3%;
+			font-size: 20px;
+			color: tomato;
+		}
+
+		#powerButton {
+			background-color: #f44336;
+			color: white;
+			padding: 10px 20px;
+			text-align: center;
+			text-decoration: none;
+			display: inline-block;
+			font-size: 16px;
+			margin: 4px 2px;
+			cursor: pointer;
+			border-radius: 5px;
+			border: none;
+			position: absolute;
+			top: 50px;
+			right: 20px;
+		}
+
+		#powerButton:hover {
+			background-color: #d32f2f;
+		}
 	</style>
 </head>
+
 <body>
 	<div id="videoContainer">
 
-		<img id="video" src="{{ url_for('video_feed') }}"></div>
-		<div id="output"></div>
-		<div id="axes"></div>
-		<button id="powerButton" onclick="confirmShutdown()">
-			<svg style="width:30px;height:30px;color: white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-      			<path d="M288 256C288 273.7 273.7 288 256 288C238.3 288 224 273.7 224 256V32C224 14.33 238.3 0 256 0C273.7 0 288 14.33 288 32V256zM80 256C80 353.2 158.8 432 256 432C353.2 432 432 353.2 432 256C432 201.6 407.3 152.9 368.5 120.6C354.9 109.3 353 89.13 364.3 75.54C375.6 61.95 395.8 60.1 409.4 71.4C462.2 115.4 496 181.8 496 255.1C496 388.5 388.5 496 256 496C123.5 496 16 388.5 16 255.1C16 181.8 49.75 115.4 102.6 71.4C116.2 60.1 136.4 61.95 147.7 75.54C158.1 89.13 157.1 109.3 143.5 120.6C104.7 152.9 80 201.6 80 256z" fill="white"></path>
-			</svg>
-    	</button>
-	<a  href="https://vk.com/rtekhnopark"><img id="logo" src="/static/logo.jpg"></a>
-<!--	<a href="https://www.youtube.com/channel/UCHRTaqr8KSCfyo2_CLH-yfg"><img id="logo" src="/static/logo.png"></a>-->
-		<div id="joyDiv"></div>
+		<img id="video" src="{{ url_for('video_feed') }}">
+	</div>
+	<div id="output"></div>
+	<div id="axes"></div>
+	<button id="powerButton" onclick="confirmShutdown()">
+		<svg style="width:30px;height:30px;color: white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+			<path
+				d="M288 256C288 273.7 273.7 288 256 288C238.3 288 224 273.7 224 256V32C224 14.33 238.3 0 256 0C273.7 0 288 14.33 288 32V256zM80 256C80 353.2 158.8 432 256 432C353.2 432 432 353.2 432 256C432 201.6 407.3 152.9 368.5 120.6C354.9 109.3 353 89.13 364.3 75.54C375.6 61.95 395.8 60.1 409.4 71.4C462.2 115.4 496 181.8 496 255.1C496 388.5 388.5 496 256 496C123.5 496 16 388.5 16 255.1C16 181.8 49.75 115.4 102.6 71.4C116.2 60.1 136.4 61.95 147.7 75.54C158.1 89.13 157.1 109.3 143.5 120.6C104.7 152.9 80 201.6 80 256z"
+				fill="white"></path>
+		</svg>
+	</button>
+	<a href="https://vk.com/rtekhnopark"><img id="logo" src="/static/logo.jpg"></a>
+	<div id="joyDiv"></div>
+	<audio controls="controls" id="audioContainer">
+		<source src="{{ url_for('audio') }}" type="audio/mp3">
+		Your browser does not support the audio element.
+	</audio>
 	<script type="text/javascript">
-	function confirmShutdown() {
-    if (confirm("Вы уверены, что хотите выключить устройство?")) {
-      // Send command to power off the device
-      // Replace the code below with the actual command to power off the device
-      console.log("Устройство выключается...");
-      var xhttp = new XMLHttpRequest();
-      xhttp.open("GET", "device?poweroff=true", true);
-      xhttp.send();
-    } else {
-      console.log("Выключение отменяется.");
-}
-}
-function map(x,  in_min,  in_max,  out_min,  out_max)
-{
-  return Math.floor((x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min);
-}
+		function confirmShutdown() {
+			if (confirm("Вы уверены, что хотите выключить устройство?")) {
+				// Send command to power off the device
+				// Replace the code below with the actual command to power off the device
+				console.log("Устройство выключается...");
+				var xhttp = new XMLHttpRequest();
+				xhttp.open("GET", "device?poweroff=true", true);
+				xhttp.send();
+			} else {
+				console.log("Выключение отменяется.");
+			}
+		}
+		function map(x, in_min, in_max, out_min, out_max) {
+			return Math.floor((x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min);
+		}
 
-const gamepads = {};
+		const gamepads = {};
 
-function gamepadHandler(event, connected) {
-  const gamepad = event.gamepad;
-  // Note:
-  // gamepad === navigator.getGamepads()[gamepad.index]
+		function gamepadHandler(event, connected) {
+			const gamepad = event.gamepad;
+			// Note:
+			// gamepad === navigator.getGamepads()[gamepad.index]
 
-  if (connected) {
-    gamepads[gamepad.index] = gamepad;
-    document.getElementById('joyDiv').style.display = "none";
-  } else {
-    delete gamepads[gamepad.index];
-     document.getElementById('joyDiv').style.display = "unset";
-  }
-}
+			if (connected) {
+				gamepads[gamepad.index] = gamepad;
+				document.getElementById('joyDiv').style.display = "none";
+			} else {
+				delete gamepads[gamepad.index];
+				document.getElementById('joyDiv').style.display = "unset";
+			}
+		}
 
-window.addEventListener(
-  "gamepadconnected",
-  (e) => {
-    gamepadHandler(e, true);
-  },
-  false,
-);
-window.addEventListener(
-  "gamepaddisconnected",
-  (e) => {
-    gamepadHandler(e, false);
-  },
-  false,
-);
-		var joyParam = {"title": "joystick",
-						"autoReturnToCenter": true,
-						"internalFillColor": "#FF0000",
-						"externalStrokeColor": "#800000",
-						"externalLineWidth": "5"};
+		window.addEventListener(
+			"gamepadconnected",
+			(e) => {
+				gamepadHandler(e, true);
+			},
+			false,
+		);
+		window.addEventListener(
+			"gamepaddisconnected",
+			(e) => {
+				gamepadHandler(e, false);
+			},
+			false,
+		);
+		var joyParam = {
+			"title": "joystick",
+			"autoReturnToCenter": true,
+			"internalFillColor": "#FF0000",
+			"externalStrokeColor": "#800000",
+			"externalLineWidth": "5"
+		};
 		var joy = new JoyStick('joyDiv', joyParam);
 
-		function control(x, y){
+		function control(x, y) {
 			var xhttp = new XMLHttpRequest();
-			xhttp.open("GET", "control?x=" + x +"&y="+y, true);
+			xhttp.open("GET", "control?x=" + x + "&y=" + y, true);
 			xhttp.send();
 		}
 
-		setInterval(function(){
-		const gamepads = navigator.getGamepads();
-		let gamepad = gamepads[0];
-		let x,y
-		if (gamepad){
-			x = map(gamepad?.axes[2], -1, 1, -100, 100)
-			y = map(gamepad?.axes[3], -1, 1, 100, -100)
-		}
-		else {
-			x = joy.GetX()
-			y = joy.GetY()
-		}
+		setInterval(function () {
+			const gamepads = navigator.getGamepads();
+			let gamepad = gamepads[0];
+			let x, y
+			if (gamepad) {
+				x = map(gamepad?.axes[2], -1, 1, -100, 100)
+				y = map(gamepad?.axes[3], -1, 1, 100, -100)
+			}
+			else {
+				x = joy.GetX()
+				y = joy.GetY()
+			}
 
-		document.getElementById('axes').innerText = `axes x: ${x} y: ${y}\r\n gamepad: ${JSON.stringify(gamepad, null , 2)}`;
-		control(x, y);}, 50
+			document.getElementById('axes').innerText = `axes x: ${x} y: ${y}\r\n gamepad: ${JSON.stringify(gamepad, null, 2)}`;
+			control(x, y);
+		}, 50
 		);
-
 	</script>
-<script>
-	console.log(window.navigator.standalone);
-</script>
-<script>
-setInterval(function() {
-	fetch('/data')
-  .then(response => response.json())
-  .then(data => {
-    const value = data.status.radsens.intensyDynamic; // заменить someValue на нужное значение
-    document.getElementById('output').innerText = `Фон: ${value}`;
-  })
-  .catch(error => console.error(error));
-  }, 1000);
-</script>
-<script>
-
-
-</script>
+	<script>
+		console.log(window.navigator.standalone);
+	</script>
+	<script>
+		setInterval(function () {
+			fetch('/data')
+				.then(response => response.json())
+				.then(data => {
+					const value = data.status.radsens.intensyDynamic; // заменить someValue на нужное значение
+					document.getElementById('output').innerText = `☢️: ${value}`;
+				})
+				.catch(error => console.error(error));
+		}, 1000);
+	</script>
 </body>
+
 </html>
