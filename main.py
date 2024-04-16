@@ -14,9 +14,7 @@ CHUNK = 4096
 FORMAT = pyaudio.paFloat32
 CHANNELS = 1 if sys.platform == 'darwin' else 2
 RATE = 44100
-RECORD_SECONDS = 5
 
-audio1 = pyaudio.PyAudio()
 
 
 def list_microphones(pyaudio_instance):
@@ -178,17 +176,13 @@ def video_feed():
 p = pyaudio.PyAudio()
 
 
-
 def read_audio(inp, audio):
     while True:
         inp.write(audio.read(num_frames=CHUNK))
 
+
 def generateAudio():
     global CHUNK, FORMAT, CHANNELS, RATE
-
-    sampleRate = RATE
-    bitsPerSample = 16
-    channels = CHANNELS
 
     a = pyaudio.PyAudio().open(
         format=FORMAT,
@@ -200,11 +194,11 @@ def generateAudio():
     )
 
     c = f'ffmpeg -f f32le -acodec pcm_f32le -ar {RATE} -ac {CHANNELS} -i pipe: -f mp3 pipe:'
-    p = Popen(c.split(), stdin=PIPE, stdout=PIPE)
-    threading.Thread(target=read_audio, args=(p.stdin, a), daemon=True).start()
+    p_ = Popen(c.split(), stdin=PIPE, stdout=PIPE)
+    threading.Thread(target=read_audio, args=(p_.stdin, a), daemon=True).start()
 
     while True:
-        yield p.stdout.readline()
+        yield p_.stdout.readline()
 
 
 @app.route("/audio")
@@ -287,7 +281,7 @@ if __name__ == '__main__':
                 radsens_answer = _answer
             time.sleep(1 / sendFreq)
 
-print(list_microphones(audio1))
+print(list_microphones(pyaudio.PyAudio()))
 
 threading.Thread(target=sender, daemon=True).start()  # запускаем тред отправки пакетов по uart с демоном
 
